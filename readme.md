@@ -5,7 +5,7 @@ This module converts your correctly formatted Excel spreadsheet to a specified t
 Supported Excel formats are XLS/XLSX
 
 # Usage
-The Database must already be created in MYSQL. A non-existent table name should be provided.
+The Database must already be created in MYSQL. A table name should be provided.
 
 # Spreadsheet Format
 Please have a look at the sample Excel sheets provided to have a clear view of the File. <a href="https://go.microsoft.com/fwlink/?LinkID=521962">Microsoft Sample Sheet</a>

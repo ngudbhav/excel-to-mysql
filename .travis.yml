@@ -2,8 +2,8 @@ language: node_js
 services:
   - mysql
 before_install:
-  - mysql -e 'DROP DATABASE IF EXISTS tests;CREATE DATABASE ug;'
+  - mysql -e 'DROP DATABASE IF EXISTS ug;CREATE DATABASE ug;'
 after_success:
-  - mysql -e 'drop table sample;'
+  - mysql -e 'drop database ug;'
 node_js:
   - "4"
