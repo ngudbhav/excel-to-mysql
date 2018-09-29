@@ -109,10 +109,8 @@ exports.covertToMYSQL = function(data, options, callback){
 					tableString = tableString.replace(/.$/,"");
 					connection.query('create table if not exists '+data.table+' ('+tableString+')', function(error, results){
 						if(error){
-							else{
-								reject(error);
-								return callback(error);
-							}
+							reject(error);
+							return callback(error);
 						}
 						else{
 							for(var i=1;i<rows.length;i++){
