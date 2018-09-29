@@ -107,7 +107,7 @@ exports.covertToMYSQL = function(data, options, callback){
 						}
 					}
 					tableString = tableString.replace(/.$/,"");
-					connection.query('create table '+data.table+' ('+tableString+')', function(error, results){
+					connection.query('create table if not exists '+data.table+' ('+tableString+')', function(error, results){
 						if(error){
 							if(error.code == 'ER_TABLE_EXISTS_ERROR'){
 								reject("Table already Exists!");
