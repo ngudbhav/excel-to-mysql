@@ -3,5 +3,7 @@ services:
   - mysql
 before_install:
   - mysql -e 'DROP DATABASE IF EXISTS tests;CREATE DATABASE ug;'
+after_success:
+  - mysql -e 'drop table sample;'
 node_js:
   - "4"
