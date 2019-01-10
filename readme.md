@@ -1,4 +1,4 @@
-# excel-to-mysql
+# excel-to-mysql <img src="https://travis-ci.org/ngudbhav/excel-to-mysql.svg?branch=master">
 This module converts your correctly formatted Excel spreadsheet to a specified table in specified database in MYSQL.
 
 # Excel Formats Supported

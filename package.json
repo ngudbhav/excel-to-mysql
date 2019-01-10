@@ -1,6 +1,6 @@
 {
   "name": "excel-to-mysql",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "This module converts an excel spreadsheet to mysql table",
   "main": "index.js",
   "scripts": {

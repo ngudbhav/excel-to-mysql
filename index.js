@@ -47,6 +47,10 @@ exports.covertToMYSQL = function(data, options, callback){
 	}
 	noOfOperations = 0;
 	return new Promise((resolve, reject) => {
+		var sRow = 0;
+		var eRow = 0;
+		var sCol = 0;
+		var eCol = 0;
 		var connection = mysql.createConnection({
 			host: data.host,
 			user: data.user,
@@ -72,50 +76,71 @@ exports.covertToMYSQL = function(data, options, callback){
 				readExcel(fs.createReadStream(data.path)).then((rows) => {
 					var progress = 1;
 					var tableString = '';
-					for(var i in rows[0]){
+					if(options.customStartEnd === true){
+						if(options.startRow && options.startCol && options.endRow && options.endCol){
+							sRow = options.startRow-1;
+							eRow = options.endRow;
+							sCol = options.startCol-1;
+							eCol = options.endCol;
+						}
+						else{
+							reject("Custom Start End requires all 4 points to be declared, i.e., Start Row, Start Column, End Row, End Column. It Seems one or more end points are not declared.");
+							return callback("Custom Start End requires all 4 points to be declared, i.e., Start Row, Start Column, End Row, End Column. It Seems one or more end points are not declared.");
+						}
+					}
+					else{
+						eCol = rows[0].length;
+						eRow = rows.length;
+					}
+					console.log(sCol);
+					console.log(sRow);
+					console.log(eRow);
+					console.log(eCol);
+					for(var i=sCol;i<eCol;i++){
 						noOfOperations = 0;
 						checkInt = true;
-						rows[0][i] = rows[0][i].split(" ").join("_");
-						tableString+=rows[0][i]+" ";
-						if(typeof(rows[1][i]) === 'number'){
-							for(var j=1;j<rows.length;j++){
+						rows[sRow][i] = rows[sRow][i].split(" ").join("_");
+						tableString+=rows[sRow][i]+" ";
+						if(typeof(rows[sRow+1][i]) === 'number'){
+							for(var j=sRow+1;j<eRow;j++){
 								if(!isInt(rows[j][i])){
 									tableString+="float,";
 									checkInt = false;
 									break;
 								}
-								tableString+=returnString(rows.length-1, rows[1][i]);
+								tableString+=returnString(eRow-1, rows[sRow+1][i]);
 							}
 						}
-						else if(typeof(rows[1][i]) === 'string'){
+						else if(typeof(rows[sRow+1][i]) === 'string'){
 							tableString+="text,";
 						}
-						else if(typeof(rows[1][i]) === 'object'){
-							if(isDate(rows[1][i])){
+						else if(typeof(rows[sRow+1][i]) === 'object'){
+							if(isDate(rows[sRow+1][i])){
 								tableString+="date,";
-								for(var j=1;j<rows.length;j++){
+								for(var j=sRow+1;j<eRow;j++){
 									rows[j][i] = formatDate(rows[j][i]);
 								}
 							}
 							else{
-								reject(error);
-								return callback(error);
+								reject("Datatype unsupported!");
+								return callback("Datatype unsupported!");
 							}
 						}
-						else if(typeof(rows[1][i])==='boolean'){
+						else if(typeof(rows[sRow+1][i])==='boolean'){
 							tableString+="bool,";
 						}
 					}
 					tableString = tableString.replace(/.$/,"");
+					console.log(tableString);
 					connection.query('create table if not exists '+data.table+' ('+tableString+')', function(error, results){
 						if(error){
 							reject(error);
 							return callback(error);
 						}
 						else{
-							for(var i=1;i<rows.length;i++){
+							for(var i=sRow+1;i<eRow;i++){
 								var insertString = '';
-								for(var j=0;j<rows[0].length;j++){
+								for(var j=sCol;j<eCol;j++){
 									if(rows[i][j] === true){
 										insertString+="1,"
 									}
@@ -125,7 +150,6 @@ exports.covertToMYSQL = function(data, options, callback){
 									else{
 										insertString+="\""+rows[i][j]+"\",";
 									}
-
 								}
 								insertString = insertString.replace(/.$/,"");
 								connection.query('insert into '+data.table+' values('+insertString+')', function(error, results){
@@ -137,7 +161,7 @@ exports.covertToMYSQL = function(data, options, callback){
 										if(options.verbose === true){
 											console.log(`Placed ${progress++} row`);
 										}
-										var p = progress/(rows.length);
+										var p = progress/(eRow);
 										if(p===1){
 											connection.end();
 											resolve(results);
