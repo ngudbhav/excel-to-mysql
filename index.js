@@ -92,10 +92,9 @@ exports.covertToMYSQL = function(data, options, callback){
 						eCol = rows[0].length;
 						eRow = rows.length;
 					}
-					console.log(sCol);
-					console.log(sRow);
-					console.log(eRow);
-					console.log(eCol);
+					if(options.autoId){
+						tableString+='id int,';
+					}
 					for(var i=sCol;i<eCol;i++){
 						noOfOperations = 0;
 						checkInt = true;
@@ -131,7 +130,6 @@ exports.covertToMYSQL = function(data, options, callback){
 						}
 					}
 					tableString = tableString.replace(/.$/,"");
-					console.log(tableString);
 					connection.query('create table if not exists '+data.table+' ('+tableString+')', function(error, results){
 						if(error){
 							reject(error);
@@ -140,6 +138,9 @@ exports.covertToMYSQL = function(data, options, callback){
 						else{
 							for(var i=sRow+1;i<eRow;i++){
 								var insertString = '';
+								if(options.autoId){
+									insertString+=i+",";
+								}
 								for(var j=sCol;j<eCol;j++){
 									if(rows[i][j] === true){
 										insertString+="1,"
