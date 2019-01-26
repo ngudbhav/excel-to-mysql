@@ -5,7 +5,7 @@ var excelToMYSQL = require('../index.js');
 var data = {
 	host: "localhost",
 	user: "root",
-	pass: "Udbhav11@",
+	pass: "",
 	path: "test/sample1.xlsx",
 	table: "sample",
 	db: "ug"
@@ -19,4 +19,4 @@ excelToMYSQL.covertToMYSQL(data, {customStartEnd: true, startRow:1, startCol: 1,
 });
 excelToMYSQL.progress.on('progress', function(data){
 	console.log(data);
-})
+});
