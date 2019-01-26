@@ -4,6 +4,8 @@
 var readExcel = require('read-excel-file/node');
 var fs = require('fs');
 var mysql = require('mysql');
+var events = require('events');
+var em = new events.EventEmitter();
 
 var isInt = function(n){
 	return parseInt(n) === n
@@ -40,6 +42,7 @@ function isDate(d){
 }
 var checkInt = true;
 
+exports.progress = em;
 exports.covertToMYSQL = function(data, options, callback){
 	if(typeof options === 'function'){
 		callback = options;
@@ -57,6 +60,9 @@ exports.covertToMYSQL = function(data, options, callback){
 			password: data.pass,
 			database: data.db
 		});
+		if(options.verbose === true){
+			console.log('Depracation Warning: This option has been depracated and will be removed in the next major update, i.e., v2.');
+		}
 		connection.connect(function(error){
 			if(error){
 				if(error.code=='ER_BAD_DB_ERROR'){
@@ -162,7 +168,11 @@ exports.covertToMYSQL = function(data, options, callback){
 										if(options.verbose === true){
 											console.log(`Placed ${progress++} row`);
 										}
+										else{
+											progress++;
+										}
 										var p = progress/(eRow);
+										em.emit('progress', parseInt(p*100));
 										if(p===1){
 											connection.end();
 											resolve(results);

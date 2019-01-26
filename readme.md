@@ -67,11 +67,16 @@ var options = {
 	endCol: <required> //Valid only if customStartEnd is true. Defines the end Column of the data.
 }
 ```
-The third argument is the callback function which should be executed.
+The third argument is the callback function which will be executed only after the completion of the whole conversion.
 
 ```sh
 excelMysql.covertToMYSQL(credentials, options, callback);
 ```
-
+If live progress monitoring is required, the following snippet can be used.
+```sh
+excelMysql.progress.on('progress', function(data){
+	console.log(data); // int value returned ranging from 1-100.
+});
+```
 # Want to use the GUI instead?
 We have got you covered! <a href="https://github.com/ngudbhav/excel-to-mysql-electron-app">Github Link</a>.
