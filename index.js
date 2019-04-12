@@ -4,8 +4,6 @@
 var readExcel = require('read-excel-file/node');
 var fs = require('fs');
 var mysql = require('mysql');
-var events = require('events');
-var em = new events.EventEmitter();
 
 var isInt = function(n){
 	return parseInt(n) === n
@@ -42,7 +40,6 @@ function isDate(d){
 }
 var checkInt = true;
 
-exports.progress = em;
 exports.covertToMYSQL = function(data, options, callback){
 	if(typeof options === 'function'){
 		callback = options;
@@ -61,7 +58,7 @@ exports.covertToMYSQL = function(data, options, callback){
 			database: data.db
 		});
 		if(options.verbose === true){
-			console.log('Depracation Warning: This option has been depracated and will be removed in the next major update, i.e., v2.');
+			console.log('Depracation Warning: This option has been depracated and may be removed in a next major update.');
 		}
 		connection.connect(function(error){
 			if(error){
@@ -142,8 +139,9 @@ exports.covertToMYSQL = function(data, options, callback){
 							return callback(error);
 						}
 						else{
+							var insertString = '';
 							for(var i=sRow+1;i<eRow;i++){
-								var insertString = '';
+								insertString+='(';
 								if(options.autoId){
 									insertString+=i+",";
 								}
@@ -159,28 +157,29 @@ exports.covertToMYSQL = function(data, options, callback){
 									}
 								}
 								insertString = insertString.replace(/.$/,"");
-								connection.query('insert into '+data.table+' values('+insertString+')', function(error, results){
-									if(error){
-										reject("Incorrectly formatted Excel file.");
-										return callback("Incorrectly formatted Excel file.");
+								insertString+='),';
+							}
+							insertString = insertString.replace(/.$/,'');
+							if(options.verbose === true){
+								console.log(insertString);
+							}
+							connection.query('insert into '+data.table+' values'+insertString, function(error, results){
+								if(error){
+									if(error.code == 'ER_WRONG_VALUE_COUNT_ON_ROW'){
+										reject('The table you provided either already contains some data or there is a problem with the already prevailing column count.');
+										return callback('The table you provided either already contains some data or there is a problem with the already prevailing column count.');
 									}
 									else{
-										if(options.verbose === true){
-											console.log(`Placed ${progress++} row`);
-										}
-										else{
-											progress++;
-										}
-										var p = progress/(eRow);
-										em.emit('progress', parseInt(p*100));
-										if(p===1){
-											connection.end();
-											resolve(results);
-											return callback(null, results);
-										}
+										reject("Incorrectly formatted Excel file at line number "+i);
+										return callback("Incorrectly formatted Excel file at line number "+i );
 									}
-								});
-							}
+								}
+								else{
+									connection.end();
+									resolve(results);
+									return callback(null, results);
+								}
+							});
 						}
 					});
 				});

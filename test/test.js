@@ -17,6 +17,3 @@ excelToMYSQL.covertToMYSQL(data, {customStartEnd: true, startRow:1, startCol: 1,
 		console.log(results);
 	}
 });
-excelToMYSQL.progress.on('progress', function(data){
-	console.log(data);
-});
