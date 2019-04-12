@@ -58,7 +58,7 @@ var credentials = {
 The second one is an optional argument of options with default values as follows.
 ```sh
 var options = {
-	verbose: false //Console.log the row number as per the excel file, if true.
+	verbose: <depracated> false //Console.log the row number as per the excel file, if true.
 	autoId: false //Automatically insert id of every row, i.e., numbering every row.
 	customStartEnd: false //Custom insert the row and columns rather than full excel-file.
 	startRow: <required> //Valid only if customStartEnd is true. Defines the start Row of the data.
@@ -71,12 +71,6 @@ The third argument is the callback function which will be executed only after th
 
 ```sh
 excelMysql.covertToMYSQL(credentials, options, callback);
-```
-If live progress monitoring is required, the following snippet can be used.
-```sh
-excelMysql.progress.on('progress', function(data){
-	console.log(data); // int value returned ranging from 1-100.
-});
 ```
 # Want to use the GUI instead?
 We have got you covered! <a href="https://github.com/ngudbhav/excel-to-mysql-electron-app">Github Link</a>.
