@@ -6,4 +6,4 @@ before_install:
 after_success:
   - mysql -e 'drop database ug;'
 node_js:
-  - "4"
+  - "8"
