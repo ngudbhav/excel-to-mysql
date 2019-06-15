@@ -1,28 +1,26 @@
 {
   "name": "excel-to-mysql",
-  "version": "2.0.0",
+  "version": "2.5.0",
   "description": "This module converts an excel spreadsheet to mysql table",
   "main": "index.js",
   "scripts": {
     "test": "node test/test.js",
-    "prepublish":"npm test"
+    "prepublish": "npm test"
   },
   "engines": {
     "node": ">=4.2.4"
   },
-  "keywords":"excel, mysql, covert, exceltomysql, excel-to-mysql",
+  "keywords": "excel, mysql, covert, exceltomysql, excel-to-mysql",
   "author": "Udbhav Gambhir <ngudbhav05@hotmail.com> (https://www.ngudbhav.me)",
   "license": "MIT",
-  "devDependencies": {
-    "chai": "^4.2.0",
-    "mocha": "^5.2.0"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ngudbhav/excel-to-mysql.git"
   },
   "dependencies": {
+    "csvtojson": "^2.0.8",
     "mysql": "^2.16.0",
+    "mysqldump": "^3.0.0",
     "read-excel-file": "^2.0.2"
   }
 }

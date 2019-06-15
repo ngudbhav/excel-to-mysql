@@ -1,14 +1,14 @@
 # excel-to-mysql <img src="https://travis-ci.org/ngudbhav/excel-to-mysql.svg?branch=master"> <br> <a href="https://nodei.co/npm/excel-to-mysql/"><img src="https://nodei.co/npm/excel-to-mysql.png"></a>
-This module converts your correctly formatted Excel spreadsheet to a specified table in specified database in MYSQL.
+This module converts your correctly formatted Excel spreadsheet to a specified table in specified database in MYSQL. The queries can also be written in a file (BETA).
 
 # Excel Formats Supported
-Supported Excel formats are XLS/XLSX
+Supported Excel formats are XLS/XLSX/CSV.
 
 # Usage
-The Database must already be created in MYSQL. A table name should be provided.
+The Database must already be created in MYSQL. A table name should be provided. Please keep the column names in String format only.
 
 # Spreadsheet Format
-Please have a look at the sample Excel sheets provided to have a clear view of the File. <a href="https://go.microsoft.com/fwlink/?LinkID=521962">Microsoft Sample Sheet</a>
+Please have a look at the sample Excel sheets provided to have a clear view of the File. <a href="https://go.microsoft.com/fwlink/?LinkID=521962">Microsoft Sample Sheet (XLSX)</a>
 
 # Installation
 ```sh
@@ -46,10 +46,16 @@ This module needs 3 arguments.
 The first one is the object with your credentials.
 
 ```sh
-var credentials = {
+var credentialsForDB = {
 	host: host,
 	user: MYSQL Username,
 	pass: Password for the above account,
+	path: path for the excel file,
+	table: Table name for creation,
+	db: Your Database name
+};
+
+var credentialsForFile = {
 	path: path for the excel file,
 	table: Table name for creation,
 	db: Your Database name
@@ -58,19 +64,24 @@ var credentials = {
 The second one is an optional argument of options with default values as follows.
 ```sh
 var options = {
-	verbose: <depracated> false //Console.log the row number as per the excel file, if true.
+	verbose: true //logs the steps undergoing.
 	autoId: false //Automatically insert id of every row, i.e., numbering every row.
 	customStartEnd: false //Custom insert the row and columns rather than full excel-file.
 	startRow: <required> //Valid only if customStartEnd is true. Defines the start Row of the data.
 	endRow: <required> //Valid only if customStartEnd is true. Defines the end Row of the data.
 	startCol: <required> //Valid only if customStartEnd is true. Defines the start Column of the data.
 	endCol: <required> //Valid only if customStartEnd is true. Defines the end Column of the data.
+	safeMode: false //Backup the db to the current working directory with <db>.sql as file name.
 }
 ```
 The third argument is the callback function which will be executed only after the completion of the whole conversion.
 
 ```sh
 excelMysql.covertToMYSQL(credentials, options, callback);
+excelMysql.convertToFile(credentials, options, callback);
 ```
+
+convertToFile Function will write the .sql file to the current working directory with <code><db></code>.sql as the file name.
+
 # Want to use the GUI instead?
-We have got you covered! <a href="https://github.com/ngudbhav/excel-to-mysql-electron-app">Github Link</a>.
+We have got you covered! <a href="https://github.com/ngudbhav/TriCo-electron-app">Github Link</a>.
