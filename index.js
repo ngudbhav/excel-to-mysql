@@ -6,6 +6,7 @@ var fs = require('fs');
 var mysql = require('mysql');
 var mysqldump = require('mysqldump');
 const csv=require('csvtojson');
+var path = require('path');
 
 var isInt = function(n){
 	return parseInt(n) === n
@@ -193,7 +194,7 @@ exports.covertToMYSQL = function(data, options, callback){
 					password: data.pass,
 					database: data.db,
 				},
-				dumpToFile: './'+data.db+'.sql',
+				dumpToFile: path.join(process.cwd(), data.db+'.sql'),
 			});
 		}
 		var connection = mysql.createConnection({
