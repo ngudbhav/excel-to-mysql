@@ -5,7 +5,7 @@ var readExcel = require('read-excel-file/node');
 var fs = require('fs');
 var mysql = require('mysql');
 var mysqldump = require('mysqldump');
-const csv=require('csvtojson')
+const csv=require('csvtojson');
 
 var isInt = function(n){
 	return parseInt(n) === n

@@ -83,5 +83,8 @@ excelMysql.convertToFile(credentials, options, callback);
 
 convertToFile Function will write the .sql file to the current working directory with <code><db></code>.sql as the file name.
 
+# Want to covert to MongoDB instead?
+We have got you covered! <a href="https://github.com/ngudbhav/excel-to-mongodb">Github Link</a>.
+
 # Want to use the GUI instead?
 We have got you covered! <a href="https://github.com/ngudbhav/TriCo-electron-app">Github Link</a>.
