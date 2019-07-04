@@ -1,9 +1,8 @@
  version: 2
  jobs:
   build:
-    machine:
-      image: ubuntu-1604:201903-01
     docker:
+      - image: ubuntu-1604:201903-01
       - image: circleci/node:8.0.0
       - image: circleci/mysql:5.7
         environment:
