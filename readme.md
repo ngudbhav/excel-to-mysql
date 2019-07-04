@@ -1,4 +1,7 @@
-# excel-to-mysql <img src="https://travis-ci.org/ngudbhav/excel-to-mysql.svg?branch=master"> <br> <a href="https://nodei.co/npm/excel-to-mysql/"><img src="https://nodei.co/npm/excel-to-mysql.png"></a>
+# excel-to-mysql 
+
+[![Build Status](https://travis-ci.org/ngudbhav/excel-to-mysql.svg?branch=master)](https://travis-ci.org/ngudbhav/excel-to-mysql)[![CircleCI](https://circleci.com/gh/ngudbhav/excel-to-mysql.svg?style=svg)](https://circleci.com/gh/ngudbhav/excel-to-mysql)
+
 This module converts your correctly formatted Excel spreadsheet to a specified table in specified database in MYSQL. The queries can also be written in a file (BETA).
 
 # Excel Formats Supported
