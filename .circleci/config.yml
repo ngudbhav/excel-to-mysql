@@ -7,7 +7,7 @@
         environment:
           MYSQL_ROOT_PASSWORD: ngudbhav
           MYSQL_DATABASE: ug
-          MYSQL_ROOT_HOST: %
+          MYSQL_ROOT_HOST: '%'
           MYSQL_USER: root
           MYSQL_PASSWORD: ngudbhav
     steps:
