@@ -3,7 +3,7 @@
   build:
     docker:
       - image: circleci/node:8.0.0
-      - image: circleci/mysql:5.6
+      - image: circleci/mysql:5.7
         environment:
           MYSQL_ROOT_PASSWORD: ngudbhav
           MYSQL_DATABASE: ug
@@ -23,6 +23,7 @@
       - run:
           name: Install MySQL CLI; Import dummy data; run an example query
           command: |
+            sudo apt-get update
             sudo apt-get install mysql-client
             mysql -h 127.0.0.1 -u root -pngudbhav --execute="DROP DATABASE IF EXISTS ug;CREATE DATABASE ug;"
       - run:
