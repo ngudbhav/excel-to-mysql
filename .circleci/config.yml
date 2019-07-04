@@ -1,7 +1,6 @@
  version: 2
  jobs:
-   build:
-     docker:
+   docker:
        - image: circleci/node:8.0.0
        - image: circleci/mysql:5.0.4
          environment:
