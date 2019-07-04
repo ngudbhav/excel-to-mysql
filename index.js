@@ -54,119 +54,244 @@ exports.convertToFile = function(data, options, callback){
 		var eRow = 0;
 		var sCol = 0;
 		var eCol = 0;
-		readExcel(fs.createReadStream(data.path)).then((rows) => {
-			var progress = 1;
-			var tableString = '';
-			if(options.customStartEnd === true){
-				if(options.startRow && options.startCol && options.endRow && options.endCol){
-					sRow = options.startRow-1;
-					eRow = options.endRow;
-					sCol = options.startCol-1;
-					eCol = options.endCol;
-				}
-				else{
-					reject("Custom Start End requires all 4 points to be declared, i.e., Start Row, Start Column, End Row, End Column. It Seems one or more end points are not declared.");
-					return callback("Custom Start End requires all 4 points to be declared, i.e., Start Row, Start Column, End Row, End Column. It Seems one or more end points are not declared.");
-				}
-			}
-			else{
-				eCol = rows[0].length;
-				eRow = rows.length;
-			}
-			if(options.autoId){
-				tableString+='id int,';
-			}
-			for(var i=sCol;i<eCol;i++){
-				noOfOperations = 0;
-				checkInt = true;
-				rows[sRow][i] = rows[sRow][i].toString().split(" ").join("_");
-				tableString+=rows[sRow][i]+" ";
-				if(typeof(rows[sRow+1][i]) === 'number'){
-					for(var j=sRow+1;j<eRow;j++){
-						if(!isInt(rows[j][i])){
-							tableString+="float,";
-							checkInt = false;
-							break;
+		var d = (data.path).toString().slice(data.path.toString().length-3, data.path.toString().length);
+		if(d == 'csv' || d == 'CSV'){
+			fs.readFile(data.path, 'utf8', function(error, sdata){
+				csv({
+				    noheader:true,
+				    output: "csv"
+				})
+				.fromString(sdata)
+				.then((rows)=>{
+					var progress = 1;
+					var tableString = '';
+					if(options.customStartEnd === true){
+						if(options.startRow && options.startCol && options.endRow && options.endCol){
+							sRow = options.startRow-1;
+							eRow = options.endRow;
+							sCol = options.startCol-1;
+							eCol = options.endCol;
 						}
-						tableString+=returnString(eRow-1, rows[sRow+1][i]);
-					}
-				}
-				else if(typeof(rows[sRow+1][i]) === 'string'){
-					tableString+="text,";
-				}
-				else if(typeof(rows[sRow+1][i]) === 'object'){
-					if(isDate(rows[sRow+1][i])){
-						tableString+="date,";
-						for(var j=sRow+1;j<eRow;j++){
-							rows[j][i] = formatDate(rows[j][i]);
+						else{
+							reject("Custom Start End requires all 4 points to be declared, i.e., Start Row, Start Column, End Row, End Column. It Seems one or more end points are not declared.");
+							return callback("Custom Start End requires all 4 points to be declared, i.e., Start Row, Start Column, End Row, End Column. It Seems one or more end points are not declared.");
 						}
 					}
 					else{
-						reject("Datatype unsupported!");
-						return callback("Datatype unsupported!");
+						eCol = rows[0].length;
+						eRow = rows.length;
 					}
-				}
-				else if(typeof(rows[sRow+1][i])==='boolean'){
-					tableString+="bool,";
-				}
-			}
-			tableString = tableString.replace(/.$/,"");
-			if(!data.table){
-				reject("Please specify a table");
-				return callback("Please specify a table");
-			}
-			if(!data.db){
-				reject("Please specify a database");
-				return callback("Please specify a database");
-			}
-			fs.writeFile('./'+data.db+'.sql', 'use '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
-				if(error) throw error;
-				else{
-					var insertString = '';
-					for(var i=sRow+1;i<eRow;i++){
-						insertString+='(';
-						if(options.autoId){
-							insertString+=i+",";
+					if(options.autoId){
+						tableString+='id int,';
+					}
+					for(var i=sCol;i<eCol;i++){
+						noOfOperations = 0;
+						checkInt = true;
+						rows[sRow][i] = rows[sRow][i].toString().split(" ").join("_");
+						tableString+=rows[sRow][i]+" ";
+						if(typeof(rows[sRow+1][i]) === 'number'){
+							for(var j=sRow+1;j<eRow;j++){
+								if(!isInt(rows[j][i])){
+									tableString+="float,";
+									checkInt = false;
+									break;
+								}
+								tableString+=returnString(eRow-1, rows[sRow+1][i]);
+							}
 						}
-						for(var j=sCol;j<eCol;j++){
-							if(!rows[i]){
-								reject('End points may be defined out of bounds in reference to the file.');
-								return callback('End points may be defined out of bounds in reference to the file.');
-							}
-							if(rows[i][j] === true){
-								insertString+="1,"
-							}
-							else if(rows[i][j] === false){
-								insertString+="0,"
+						else if(typeof(rows[sRow+1][i]) === 'string'){
+							tableString+="text,";
+						}
+						else if(typeof(rows[sRow+1][i]) === 'object'){
+							if(isDate(rows[sRow+1][i])){
+								tableString+="date,";
+								for(var j=sRow+1;j<eRow;j++){
+									rows[j][i] = formatDate(rows[j][i]);
+								}
 							}
 							else{
-								insertString+="\""+rows[i][j]+"\",";
+								reject("Datatype unsupported!");
+								return callback("Datatype unsupported!");
 							}
 						}
-						insertString = insertString.replace(/.$/,"");
-						insertString+='),';
+						else if(typeof(rows[sRow+1][i])==='boolean'){
+							tableString+="bool,";
+						}
 					}
-					insertString = insertString.replace(/.$/,'');
-					fs.appendFile('./'+data.db+'.sql', 'Lock tables '+data.table+' write;\n', function(error){
+					tableString = tableString.replace(/.$/,"");
+					if(!data.table){
+						reject("Please specify a table");
+						return callback("Please specify a table");
+					}
+					if(!data.db){
+						reject("Please specify a database");
+						return callback("Please specify a database");
+					}
+					fs.writeFile('./'+data.db+'.sql', 'use '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
 						if(error) throw error;
 						else{
-							fs.appendFile('./'+data.db+'.sql', 'insert into '+data.table+' values'+insertString+';\n', function(error){
+							var insertString = '';
+							for(var i=sRow+1;i<eRow;i++){
+								insertString+='(';
+								if(options.autoId){
+									insertString+=i+",";
+								}
+								for(var j=sCol;j<eCol;j++){
+									if(!rows[i]){
+										reject('End points may be defined out of bounds in reference to the file.');
+										return callback('End points may be defined out of bounds in reference to the file.');
+									}
+									if(rows[i][j] === true){
+										insertString+="1,"
+									}
+									else if(rows[i][j] === false){
+										insertString+="0,"
+									}
+									else{
+										insertString+="\""+rows[i][j]+"\",";
+									}
+								}
+								insertString = insertString.replace(/.$/,"");
+								insertString+='),';
+							}
+							insertString = insertString.replace(/.$/,'');
+							fs.appendFile('./'+data.db+'.sql', 'Lock tables '+data.table+' write;\n', function(error){
 								if(error) throw error;
 								else{
-									fs.appendFile('./'+data.db+'.sql', 'unlock tables;\n', function(error){
+									fs.appendFile('./'+data.db+'.sql', 'insert into '+data.table+' values'+insertString+';\n', function(error){
 										if(error) throw error;
 										else{
-											resolve('DONE');
-											return callback(null, 'DONE');
+											fs.appendFile('./'+data.db+'.sql', 'unlock tables;\n', function(error){
+												if(error) throw error;
+												else{
+													resolve('DONE');
+													return callback(null, 'DONE');
+												}
+											});
 										}
 									});
 								}
 							});
 						}
 					});
+				});
+			});
+		}
+		else{
+			readExcel(fs.createReadStream(data.path)).then((rows) => {
+				var progress = 1;
+				var tableString = '';
+				if(options.customStartEnd === true){
+					if(options.startRow && options.startCol && options.endRow && options.endCol){
+						sRow = options.startRow-1;
+						eRow = options.endRow;
+						sCol = options.startCol-1;
+						eCol = options.endCol;
+					}
+					else{
+						reject("Custom Start End requires all 4 points to be declared, i.e., Start Row, Start Column, End Row, End Column. It Seems one or more end points are not declared.");
+						return callback("Custom Start End requires all 4 points to be declared, i.e., Start Row, Start Column, End Row, End Column. It Seems one or more end points are not declared.");
+					}
 				}
-			});		
-		});
+				else{
+					eCol = rows[0].length;
+					eRow = rows.length;
+				}
+				if(options.autoId){
+					tableString+='id int,';
+				}
+				for(var i=sCol;i<eCol;i++){
+					noOfOperations = 0;
+					checkInt = true;
+					rows[sRow][i] = rows[sRow][i].toString().split(" ").join("_");
+					tableString+=rows[sRow][i]+" ";
+					if(typeof(rows[sRow+1][i]) === 'number'){
+						for(var j=sRow+1;j<eRow;j++){
+							if(!isInt(rows[j][i])){
+								tableString+="float,";
+								checkInt = false;
+								break;
+							}
+							tableString+=returnString(eRow-1, rows[sRow+1][i]);
+						}
+					}
+					else if(typeof(rows[sRow+1][i]) === 'string'){
+						tableString+="text,";
+					}
+					else if(typeof(rows[sRow+1][i]) === 'object'){
+						if(isDate(rows[sRow+1][i])){
+							tableString+="date,";
+							for(var j=sRow+1;j<eRow;j++){
+								rows[j][i] = formatDate(rows[j][i]);
+							}
+						}
+						else{
+							reject("Datatype unsupported!");
+							return callback("Datatype unsupported!");
+						}
+					}
+					else if(typeof(rows[sRow+1][i])==='boolean'){
+						tableString+="bool,";
+					}
+				}
+				tableString = tableString.replace(/.$/,"");
+				if(!data.table){
+					reject("Please specify a table");
+					return callback("Please specify a table");
+				}
+				if(!data.db){
+					reject("Please specify a database");
+					return callback("Please specify a database");
+				}
+				fs.writeFile('./'+data.db+'.sql', 'use '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
+					if(error) throw error;
+					else{
+						var insertString = '';
+						for(var i=sRow+1;i<eRow;i++){
+							insertString+='(';
+							if(options.autoId){
+								insertString+=i+",";
+							}
+							for(var j=sCol;j<eCol;j++){
+								if(!rows[i]){
+									reject('End points may be defined out of bounds in reference to the file.');
+									return callback('End points may be defined out of bounds in reference to the file.');
+								}
+								if(rows[i][j] === true){
+									insertString+="1,"
+								}
+								else if(rows[i][j] === false){
+									insertString+="0,"
+								}
+								else{
+									insertString+="\""+rows[i][j]+"\",";
+								}
+							}
+							insertString = insertString.replace(/.$/,"");
+							insertString+='),';
+						}
+						insertString = insertString.replace(/.$/,'');
+						fs.appendFile('./'+data.db+'.sql', 'Lock tables '+data.table+' write;\n', function(error){
+							if(error) throw error;
+							else{
+								fs.appendFile('./'+data.db+'.sql', 'insert into '+data.table+' values'+insertString+';\n', function(error){
+									if(error) throw error;
+									else{
+										fs.appendFile('./'+data.db+'.sql', 'unlock tables;\n', function(error){
+											if(error) throw error;
+											else{
+												resolve('DONE');
+												return callback(null, 'DONE');
+											}
+										});
+									}
+								});
+							}
+						});
+					}
+				});		
+			});
+		}
 	});
 }
 exports.covertToMYSQL = function(data, options, callback){

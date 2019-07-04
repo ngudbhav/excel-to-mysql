@@ -16,7 +16,7 @@ var fdata = {
 	db: "ug"
 };
 
-excelToMYSQL.convertToFile(fdata, {customStartEnd: true, startRow:1, startCol: 1, endRow: 100, endCol: 10, autoId:true}, function(error, results){
+excelToMYSQL.convertToFile(data, {customStartEnd: false, startRow:1, startCol: 1, endRow: 100, endCol: 10, autoId:true}, function(error, results){
 	if(error) throw error;
 	else{
 		console.log(results);
