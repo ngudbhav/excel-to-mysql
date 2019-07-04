@@ -3,13 +3,11 @@ sudo: required
 services:
   - mysql
 before_install:
-  - sudo mysql -e "use mysql; update user set password=PASSWORD('ngudbhav') where User='root'; update user set plugin='mysql_native_password';FLUSH PRIVILEGES;"
+  - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('ngudbhav') where User='root'; update user set plugin='mysql_native_password';FLUSH PRIVILEGES;"
   - sudo mysql_upgrade -u root -pngudbhav
   - sudo service mysql restart
-  - mysql -e 'DROP DATABASE IF EXISTS ug;CREATE DATABASE ug;'
-before_script:
-  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('ngudbhav') WHERE user='root';\nFLUSH PRIVILEGES;"
+  - mysql -u root -pngudbhav --execute="DROP DATABASE IF EXISTS ug;CREATE DATABASE ug;"
 after_success:
-  - mysql -e 'drop database ug;'
+  - mysql -u root -pngudbhav --execute="drop database ug;"
 node_js:
   - "8"

@@ -8,8 +8,6 @@
           MYSQL_ROOT_PASSWORD: ngudbhav
           MYSQL_DATABASE: ug
           MYSQL_ROOT_HOST: '%'
-          MYSQL_USER: root
-          MYSQL_PASSWORD: ngudbhav
     steps:
       - checkout
       - run:
@@ -25,8 +23,7 @@
       - run:
           name: Install MySQL CLI; Import dummy data; run an example query
           command: |
-            sudo apt-get install mysql-client
-            mysql -h 127.0.0.1 -u root --execute="DROP DATABASE IF EXISTS ug;CREATE DATABASE ug;"
+            mysql -h 127.0.0.1 -u root -pngudbhav --execute="DROP DATABASE IF EXISTS ug;CREATE DATABASE ug;"
       - run:
           name: update-npm
           command: 'sudo npm install -g npm@latest'
