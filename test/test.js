@@ -5,7 +5,7 @@ var excelToMYSQL = require('../index.js');
 var data = {
 	host: "localhost",
 	user: "root",
-	pass: "",
+	pass: "ngudbhav",
 	path: "test/test.csv",
 	table: "sample",
 	db: "ug"
