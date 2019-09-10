@@ -127,7 +127,7 @@ exports.convertToFile = function(data, options, callback){
 						reject("Please specify a database");
 						return callback("Please specify a database");
 					}
-					fs.writeFile('./'+data.db+'.sql', 'use '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
+					fs.writeFile('./'+data.db+'.sql', 'create database if not exists '+data.db+';\nuse '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
 						if(error) throw error;
 						else{
 							var insertString = '';
@@ -243,7 +243,7 @@ exports.convertToFile = function(data, options, callback){
 					reject("Please specify a database");
 					return callback("Please specify a database");
 				}
-				fs.writeFile('./'+data.db+'.sql', 'use '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
+				fs.writeFile('./' + data.db + '.sql', 'create database if not exists ' + data.db +';\nuse '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
 					if(error) throw error;
 					else{
 						var insertString = '';
@@ -326,18 +326,14 @@ exports.covertToMYSQL = function(data, options, callback){
 			host: data.host,
 			user: data.user,
 			password: data.pass,
-			database: data.db
+			multipleStatements: true
 		});
 		connection.connect(function(error){
 			if(options.verbose){
 				console.log('Establishing connection!');
 			}
 			if(error){
-				if(error.code=='ER_BAD_DB_ERROR'){
-					reject("Database not found!");
-					return callback("Database not found!");
-				}
-				else if(error.code == 'ER_ACCESS_DENIED_ERROR'){
+				if(error.code == 'ER_ACCESS_DENIED_ERROR'){
 					reject("Authentication Error!");
 					return callback("Authentication Error!");
 				}
@@ -347,7 +343,6 @@ exports.covertToMYSQL = function(data, options, callback){
 				}
 			}
 			else{
-				//var d = data.path.slice(data.path.length-4, data.path.length-1);
 				var d = (data.path).toString().slice(data.path.toString().length-3, data.path.toString().length);
 				if(d == 'csv' || d == 'CSV'){
 					fs.readFile(data.path, 'utf8', function(error, sdata){
@@ -413,11 +408,12 @@ exports.covertToMYSQL = function(data, options, callback){
 								}
 							}
 							tableString = tableString.replace(/.$/,"");
-							connection.query('create table if not exists '+data.table+' ('+tableString+')', function(error, results){
+							connection.query('create database if not exists '+data.db+';use '+data.db+';create table if not exists '+data.table+' ('+tableString+')', function(error, results){
 								if(options.verbose){
 									console.log('Table created!');
 								}
 								if(error){
+									console.log(error);
 									if(error.code=='ER_PARSE_ERROR'){
 										reject('It seems that the column heading are not in text format.');
 										return callback('It seems that the column heading are not in text format.');
@@ -552,7 +548,7 @@ exports.covertToMYSQL = function(data, options, callback){
 							}
 						}
 						tableString = tableString.replace(/.$/,"");
-						connection.query('create table if not exists '+data.table+' ('+tableString+')', function(error, results){
+						connection.query('create database if not exists ' + data.db + ';use ' + data.db +';create table if not exists '+data.table+' ('+tableString+')', function(error, results){
 							if(options.verbose){
 								console.log('Table created!');
 							}

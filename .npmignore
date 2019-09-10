@@ -14,3 +14,4 @@ webpack.config.js
 test/
 docs/
 ug.sql
+*-lock.json
