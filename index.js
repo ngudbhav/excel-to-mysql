@@ -8,9 +8,11 @@ var mysqldump = require('mysqldump');
 const csv=require('csvtojson');
 var path = require('path');
 
+//Differentiate between float and integer value
 var isInt = function(n){
 	return parseInt(n) === n
 };
+//Format date according to mysql format
 function formatDate(date) {
 	var d = new Date(date),
 	month = '' + (d.getMonth() + 1),
@@ -20,10 +22,13 @@ function formatDate(date) {
 	if (day.length < 2) day = '0' + day;
 	return [year, month, day].join('-');
 }
+//check the number of digits
 function numDigits(x) {
 	return (Math.log10((x ^ (x >> 31)) - (x >> 31)) | 0) + 1;
 }
 var noOfOperations = 0;
+
+//return int/bigint
 function returnString(s, n){
 	++noOfOperations;
 	if(noOfOperations == s){
@@ -38,12 +43,15 @@ function returnString(s, n){
 	}
 	return "";
 }
+//check if object is date (Excel format)
 function isDate(d){
 	return d instanceof Date && !isNaN(d);
 }
 var checkInt = true;
 
+//Function to convert to file
 exports.convertToFile = function(data, options, callback){
+	//optional parameter 'options'
 	if(typeof options === 'function'){
 		callback = options;
 		options = {};
@@ -54,8 +62,10 @@ exports.convertToFile = function(data, options, callback){
 		var eRow = 0;
 		var sCol = 0;
 		var eCol = 0;
+		//Get the extension of the input file
 		var d = (data.path).toString().slice(data.path.toString().length-3, data.path.toString().length);
 		if(d == 'csv' || d == 'CSV'){
+			//if csv then input the file and output as rows as array of objects
 			fs.readFile(data.path, 'utf8', function(error, sdata){
 				csv({
 				    noheader:true,
@@ -66,6 +76,7 @@ exports.convertToFile = function(data, options, callback){
 					var progress = 1;
 					var tableString = '';
 					if(options.customStartEnd === true){
+						//No need to parse the all the rows
 						if(options.startRow && options.startCol && options.endRow && options.endCol){
 							sRow = options.startRow-1;
 							eRow = options.endRow;
@@ -81,17 +92,22 @@ exports.convertToFile = function(data, options, callback){
 						eCol = rows[0].length;
 						eRow = rows.length;
 					}
+					//Make the string to insert as a query in MySQL
 					if(options.autoId){
 						tableString+='id int,';
 					}
+					//Scan the second row to check for the datatypes.
+					//In case of numbers, we scan the whole column to make sure the datatype is int or float.
 					for(var i=sCol;i<eCol;i++){
 						noOfOperations = 0;
 						checkInt = true;
 						rows[sRow][i] = rows[sRow][i].toString().split(" ").join("_");
 						tableString+=rows[sRow][i]+" ";
+						//Check if the input is a number
 						if(typeof(rows[sRow+1][i]) === 'number'){
 							for(var j=sRow+1;j<eRow;j++){
 								if(!isInt(rows[j][i])){
+									//Check if it is float
 									tableString+="float,";
 									checkInt = false;
 									break;
@@ -99,9 +115,11 @@ exports.convertToFile = function(data, options, callback){
 								tableString+=returnString(eRow-1, rows[sRow+1][i]);
 							}
 						}
+						//If the data is a string
 						else if(typeof(rows[sRow+1][i]) === 'string'){
 							tableString+="text,";
 						}
+						//MS Excel date is object in javascript.
 						else if(typeof(rows[sRow+1][i]) === 'object'){
 							if(isDate(rows[sRow+1][i])){
 								tableString+="date,";
@@ -110,10 +128,12 @@ exports.convertToFile = function(data, options, callback){
 								}
 							}
 							else{
+								//In case of unsupported datatype
 								reject("Datatype unsupported!");
 								return callback("Datatype unsupported!");
 							}
 						}
+						//0 or 1 also corresponds to bool
 						else if(typeof(rows[sRow+1][i])==='boolean'){
 							tableString+="bool,";
 						}
@@ -127,9 +147,12 @@ exports.convertToFile = function(data, options, callback){
 						reject("Please specify a database");
 						return callback("Please specify a database");
 					}
+					//Fire up the query
 					fs.writeFile('./'+data.db+'.sql', 'create database if not exists '+data.db+';\nuse '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
 						if(error) throw error;
 						else{
+							//Create the string first and then insert the full data at once.
+							//The db operations are a bit slow in comparison to js.
 							var insertString = '';
 							for(var i=sRow+1;i<eRow;i++){
 								insertString+='(';
@@ -151,16 +174,21 @@ exports.convertToFile = function(data, options, callback){
 										insertString+="\""+rows[i][j]+"\",";
 									}
 								}
+								//Remove the trailing commas and spaces
 								insertString = insertString.replace(/.$/,"");
 								insertString+='),';
 							}
+							//Remove the trailing comma.
 							insertString = insertString.replace(/.$/,'');
+							//Acquires lock on the table to allow concurrent operations.
+							//This is done to avoid the irregular insertion in the database.
 							fs.appendFile('./'+data.db+'.sql', 'Lock tables '+data.table+' write;\n', function(error){
 								if(error) throw error;
 								else{
 									fs.appendFile('./'+data.db+'.sql', 'insert into '+data.table+' values'+insertString+';\n', function(error){
 										if(error) throw error;
 										else{
+											//Unlock the tables
 											fs.appendFile('./'+data.db+'.sql', 'unlock tables;\n', function(error){
 												if(error) throw error;
 												else{
@@ -178,10 +206,12 @@ exports.convertToFile = function(data, options, callback){
 			});
 		}
 		else{
+			//If the file is not a csv format but regular excel format (xls/xlsx)
 			readExcel(fs.createReadStream(data.path)).then((rows) => {
 				var progress = 1;
 				var tableString = '';
 				if(options.customStartEnd === true){
+					//No need to parse the all the rows
 					if(options.startRow && options.startCol && options.endRow && options.endCol){
 						sRow = options.startRow-1;
 						eRow = options.endRow;
@@ -197,17 +227,22 @@ exports.convertToFile = function(data, options, callback){
 					eCol = rows[0].length;
 					eRow = rows.length;
 				}
+				//Make the string to insert as a query in MySQL
 				if(options.autoId){
 					tableString+='id int,';
 				}
+				//Scan the second row to check for the datatypes.
+				//In case of numbers, we scan the whole column to make sure the datatype is int or float.
 				for(var i=sCol;i<eCol;i++){
 					noOfOperations = 0;
 					checkInt = true;
 					rows[sRow][i] = rows[sRow][i].toString().split(" ").join("_");
 					tableString+=rows[sRow][i]+" ";
+					//Check if the input is a number
 					if(typeof(rows[sRow+1][i]) === 'number'){
 						for(var j=sRow+1;j<eRow;j++){
 							if(!isInt(rows[j][i])){
+								//Check if it is float
 								tableString+="float,";
 								checkInt = false;
 								break;
@@ -215,9 +250,11 @@ exports.convertToFile = function(data, options, callback){
 							tableString+=returnString(eRow-1, rows[sRow+1][i]);
 						}
 					}
+					//If the data is a string
 					else if(typeof(rows[sRow+1][i]) === 'string'){
 						tableString+="text,";
 					}
+					//MS Excel date is object in javascript.
 					else if(typeof(rows[sRow+1][i]) === 'object'){
 						if(isDate(rows[sRow+1][i])){
 							tableString+="date,";
@@ -226,10 +263,12 @@ exports.convertToFile = function(data, options, callback){
 							}
 						}
 						else{
+							//In case of unsupported datatype
 							reject("Datatype unsupported!");
 							return callback("Datatype unsupported!");
 						}
 					}
+					//0 or 1 also corresponds to bool
 					else if(typeof(rows[sRow+1][i])==='boolean'){
 						tableString+="bool,";
 					}
@@ -243,9 +282,12 @@ exports.convertToFile = function(data, options, callback){
 					reject("Please specify a database");
 					return callback("Please specify a database");
 				}
+				//Fire up the query
 				fs.writeFile('./' + data.db + '.sql', 'create database if not exists ' + data.db +';\nuse '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
 					if(error) throw error;
 					else{
+						//Create the string first and then insert the full data at once.
+						//The db operations are a bit slow in comparison to js.
 						var insertString = '';
 						for(var i=sRow+1;i<eRow;i++){
 							insertString+='(';
@@ -267,16 +309,20 @@ exports.convertToFile = function(data, options, callback){
 									insertString+="\""+rows[i][j]+"\",";
 								}
 							}
+							//Remove the trailing commas and spaces
 							insertString = insertString.replace(/.$/,"");
 							insertString+='),';
 						}
 						insertString = insertString.replace(/.$/,'');
+						//Acquires lock on the table to allow concurrent operations.
+						//This is done to avoid the irregular insertion in the database.
 						fs.appendFile('./'+data.db+'.sql', 'Lock tables '+data.table+' write;\n', function(error){
 							if(error) throw error;
 							else{
 								fs.appendFile('./'+data.db+'.sql', 'insert into '+data.table+' values'+insertString+';\n', function(error){
 									if(error) throw error;
 									else{
+										//Unlock the tables
 										fs.appendFile('./'+data.db+'.sql', 'unlock tables;\n', function(error){
 											if(error) throw error;
 											else{
@@ -294,7 +340,9 @@ exports.convertToFile = function(data, options, callback){
 		}
 	});
 }
+//Function to send the data directly to the database.
 exports.covertToMYSQL = function(data, options, callback){
+	//optional parameter 'options'
 	if(typeof options === 'function'){
 		callback = options;
 		options = {};
@@ -308,10 +356,12 @@ exports.covertToMYSQL = function(data, options, callback){
 		var eRow = 0;
 		var sCol = 0;
 		var eCol = 0;
+		//Get the extension of the input file
 		if(options.safeMode){
 			if(options.verbose){
 				console.log('Backing up database');
 			}
+			//Dump the database in case safe mode is set
 			mysqldump({
 				connection: {
 					host: data.host,
@@ -322,12 +372,14 @@ exports.covertToMYSQL = function(data, options, callback){
 				dumpToFile: path.join(process.cwd(), data.db+'.sql'),
 			});
 		}
+		//Try to connect with the provided credentials
 		var connection = mysql.createConnection({
 			host: data.host,
 			user: data.user,
 			password: data.pass,
 			multipleStatements: true
 		});
+		//multipleStatements allow queries to be multiple in a single call.
 		connection.connect(function(error){
 			if(options.verbose){
 				console.log('Establishing connection!');
@@ -345,6 +397,7 @@ exports.covertToMYSQL = function(data, options, callback){
 			else{
 				var d = (data.path).toString().slice(data.path.toString().length-3, data.path.toString().length);
 				if(d == 'csv' || d == 'CSV'){
+					//if csv then input the file and output as rows as array of objects
 					fs.readFile(data.path, 'utf8', function(error, sdata){
 						csv({
 						    noheader:true,
@@ -355,6 +408,7 @@ exports.covertToMYSQL = function(data, options, callback){
 							var progress = 1;
 							var tableString = '';
 							if(options.customStartEnd === true){
+								//No need to parse the all the rows
 								if(options.startRow && options.startCol && options.endRow && options.endCol){
 									sRow = options.startRow-1;
 									eRow = options.endRow;
@@ -370,17 +424,22 @@ exports.covertToMYSQL = function(data, options, callback){
 								eCol = rows[0].length;
 								eRow = rows.length;
 							}
+							//Make the string to insert as a query in MySQL
 							if(options.autoId){
 								tableString+='id int,';
 							}
+							//Scan the second row to check for the datatypes.
+							//In case of numbers, we scan the whole column to make sure the datatype is int or float.
 							for(var i=sCol;i<eCol;i++){
 								noOfOperations = 0;
 								checkInt = true;
 								rows[sRow][i] = rows[sRow][i].toString().split(" ").join("_");
 								tableString+=rows[sRow][i]+" ";
+								//Check if the input is a number
 								if(typeof(rows[sRow+1][i]) === 'number'){
 									for(var j=sRow+1;j<eRow;j++){
 										if(!isInt(rows[j][i])){
+											//Check if it is float
 											tableString+="float,";
 											checkInt = false;
 											break;
@@ -388,9 +447,11 @@ exports.covertToMYSQL = function(data, options, callback){
 										tableString+=returnString(eRow-1, rows[sRow+1][i]);
 									}
 								}
+								//If the data is a string
 								else if(typeof(rows[sRow+1][i]) === 'string'){
 									tableString+="text,";
 								}
+								//MS Excel date is object in javascript.
 								else if(typeof(rows[sRow+1][i]) === 'object'){
 									if(isDate(rows[sRow+1][i])){
 										tableString+="date,";
@@ -399,15 +460,19 @@ exports.covertToMYSQL = function(data, options, callback){
 										}
 									}
 									else{
+										//In case of unsupported datatype
 										reject("Datatype unsupported!");
 										return callback("Datatype unsupported!");
 									}
 								}
+								//0 or 1 also corresponds to bool
 								else if(typeof(rows[sRow+1][i])==='boolean'){
 									tableString+="bool,";
 								}
 							}
 							tableString = tableString.replace(/.$/,"");
+							//Fire up the query
+							//Create database if not exists to allow database creation directly.
 							connection.query('create database if not exists '+data.db+';use '+data.db+';create table if not exists '+data.table+' ('+tableString+')', function(error, results){
 								if(options.verbose){
 									console.log('Table created!');
@@ -424,6 +489,8 @@ exports.covertToMYSQL = function(data, options, callback){
 									}
 								}
 								else{
+									//Create the string first and then insert the full data at once.
+									//The db operations are a bit slow in comparison to js.
 									var insertString = '';
 									for(var i=sRow+1;i<eRow;i++){
 										insertString+='(';
@@ -445,10 +512,14 @@ exports.covertToMYSQL = function(data, options, callback){
 												insertString+="\""+rows[i][j]+"\",";
 											}
 										}
+										//Remove the trailing commas and spaces
 										insertString = insertString.replace(/.$/,"");
 										insertString+='),';
 									}
+									//Remove the trailing comma.
 									insertString = insertString.replace(/.$/,'');
+									//Acquires lock on the table to allow concurrent operations.
+									//This is done to avoid the irregular insertion in the database.
 									connection.query('Lock tables '+data.table+' write', function(error, results){
 										if(error) throw error;
 										else{
@@ -457,6 +528,7 @@ exports.covertToMYSQL = function(data, options, callback){
 													console.log('Inserting data!');
 												}
 												if(error){
+													//Unlock the tables
 													connection.query('unlock tables', function(error, results){
 														if(error) throw error;
 														else{
@@ -473,6 +545,7 @@ exports.covertToMYSQL = function(data, options, callback){
 													}
 												}
 												else{
+													//Unlock the tables
 													connection.query('unlock tables', function(error, results){
 														if(error) throw error;
 														else{
@@ -491,10 +564,12 @@ exports.covertToMYSQL = function(data, options, callback){
 					});
 				}
 				else{
+					//If the file is not a csv format but regular excel format (xls/xlsx)
 					readExcel(fs.createReadStream(data.path)).then((rows) => {
 						var progress = 1;
 						var tableString = '';
 						if(options.customStartEnd === true){
+							//No need to parse the all the rows
 							if(options.startRow && options.startCol && options.endRow && options.endCol){
 								sRow = options.startRow-1;
 								eRow = options.endRow;
@@ -510,17 +585,22 @@ exports.covertToMYSQL = function(data, options, callback){
 							eCol = rows[0].length;
 							eRow = rows.length;
 						}
+						//Make the string to insert as a query in MySQL
 						if(options.autoId){
 							tableString+='id int,';
 						}
+						//Scan the second row to check for the datatypes.
+						//In case of numbers, we scan the whole column to make sure the datatype is int or float.
 						for(var i=sCol;i<eCol;i++){
 							noOfOperations = 0;
 							checkInt = true;
 							rows[sRow][i] = rows[sRow][i].toString().split(" ").join("_");
 							tableString+=rows[sRow][i]+" ";
+							//Check if the input is a number
 							if(typeof(rows[sRow+1][i]) === 'number'){
 								for(var j=sRow+1;j<eRow;j++){
 									if(!isInt(rows[j][i])){
+										//Check if it is float
 										tableString+="float,";
 										checkInt = false;
 										break;
@@ -528,9 +608,11 @@ exports.covertToMYSQL = function(data, options, callback){
 									tableString+=returnString(eRow-1, rows[sRow+1][i]);
 								}
 							}
+							//If the data is a string
 							else if(typeof(rows[sRow+1][i]) === 'string'){
 								tableString+="text,";
 							}
+							//MS Excel date is object in javascript.
 							else if(typeof(rows[sRow+1][i]) === 'object'){
 								if(isDate(rows[sRow+1][i])){
 									tableString+="date,";
@@ -539,10 +621,12 @@ exports.covertToMYSQL = function(data, options, callback){
 									}
 								}
 								else{
+									//In case of unsupported datatype
 									reject("Datatype unsupported!");
 									return callback("Datatype unsupported!");
 								}
 							}
+							//0 or 1 also corresponds to bool
 							else if(typeof(rows[sRow+1][i])==='boolean'){
 								tableString+="bool,";
 							}
@@ -563,6 +647,8 @@ exports.covertToMYSQL = function(data, options, callback){
 								}
 							}
 							else{
+								//Create the string first and then insert the full data at once.
+								//The db operations are a bit slow in comparison to js.
 								var insertString = '';
 								for(var i=sRow+1;i<eRow;i++){
 									insertString+='(';
@@ -584,10 +670,13 @@ exports.covertToMYSQL = function(data, options, callback){
 											insertString+="\""+rows[i][j]+"\",";
 										}
 									}
+									//Remove the trailing commas and spaces
 									insertString = insertString.replace(/.$/,"");
 									insertString+='),';
 								}
 								insertString = insertString.replace(/.$/,'');
+								//Acquires lock on the table to allow concurrent operations.
+								//This is done to avoid the irregular insertion in the database.
 								connection.query('Lock tables '+data.table+' write', function(error, results){
 									if(error) throw error;
 									else{
@@ -596,6 +685,7 @@ exports.covertToMYSQL = function(data, options, callback){
 												console.log('Inserting data!');
 											}
 											if(error){
+												//Unlock the tables
 												connection.query('unlock tables', function(error, results){
 													if(error) throw error;
 													else{
@@ -612,6 +702,7 @@ exports.covertToMYSQL = function(data, options, callback){
 												}
 											}
 											else{
+												//Unlock the tables
 												connection.query('unlock tables', function(error, results){
 													if(error) throw error;
 													else{
