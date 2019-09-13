@@ -21,6 +21,6 @@
     "csvtojson": "^2.0.8",
     "mysql": "^2.16.0",
     "mysqldump": "^3.0.0",
-    "read-excel-file": "^2.0.2"
+    "read-excel-file": "^2.0.10"
   }
 }
