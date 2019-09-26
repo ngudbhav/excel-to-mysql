@@ -10,6 +10,7 @@
   "engines": {
     "node": ">=4.2.4"
   },
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "keywords": "excel, mysql, covert, exceltomysql, excel-to-mysql",
   "author": "Udbhav Gambhir <ngudbhav05@hotmail.com> (https://www.ngudbhav.me)",
   "license": "MIT",
