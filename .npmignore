@@ -15,3 +15,4 @@ test/
 docs/
 ug.sql
 *-lock.json
+yarn.lock

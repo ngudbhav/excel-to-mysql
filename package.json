@@ -10,8 +10,16 @@
   "engines": {
     "node": ">=4.2.4"
   },
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
-  "keywords": "excel, mysql, covert, exceltomysql, excel-to-mysql",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "keywords": [
+    "excel",
+    "mysql",
+    "covert",
+    "exceltomysql",
+    "excel-to-mysql"
+  ],
   "author": "Udbhav Gambhir <ngudbhav05@hotmail.com> (https://www.ngudbhav.me)",
   "license": "MIT",
   "repository": {
@@ -19,11 +27,14 @@
     "url": "git+https://github.com/ngudbhav/excel-to-mysql.git"
   },
   "dependencies": {
-    "csvtojson": "^2.0.8",
-    "mysql": "^2.17.1",
     "csvtojson": "^2.0.10",
-    "mysql": "^2.16.0",
-    "mysqldump": "^3.0.0",
-    "read-excel-file": "^2.0.10"
+    "mysqldump": "^3.2.0",
+    "read-excel-file": "^4.0.7"
+  },
+  "peerDependencies": {
+    "mysql": "*"
+  },
+  "devDependencies": {
+    "mysql": "^2.18.1"
   }
 }

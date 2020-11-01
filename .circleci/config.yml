@@ -34,6 +34,9 @@
       - run:
           name: install-npm-wee
           command: npm install
+      - run:
+          name: install mysql connector
+          command: npm install mysql
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:

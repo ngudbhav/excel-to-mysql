@@ -1,6 +1,6 @@
 "use strict";
 
-var excelToMYSQL = require('../index.js');
+var excelToMYSQL = require('../src/index.js');
 
 var data = {
 	host: "localhost",
@@ -18,9 +18,9 @@ excelToMYSQL.convertToFile(data, {customStartEnd: false, startRow:1, startCol: 1
 	}
 });
 
-excelToMYSQL.covertToMYSQL(data, {customStartEnd: false, startRow:1, startCol: 1, endRow: 100, endCol: 10, autoId:true, verbose:true}, function(error, results){
-	if(error) throw error;
-	else{
-		console.log(results);
-	}
-});
+// excelToMYSQL.covertToMYSQL(data, {customStartEnd: false, startRow:1, startCol: 1, endRow: 100, endCol: 10, autoId:true, verbose:true}, function(error, results){
+// 	if(error) throw error;
+// 	else{
+// 		console.log(results);
+// 	}
+// });
