@@ -69,8 +69,11 @@ var credentialsForDB = {
 	pass: Password for the above account,
 	path: path for the excel file,
 	table: Table name for creation,
-	db: Your Database name
+	db: Your Database name,
+	endConnection*: true
 };
+
+* Please note that endConnection false may not terminate the process.
 
 var credentialsForFile = {
 	path: path for the excel file,
@@ -83,14 +86,15 @@ The second one is an optional argument of options with default values as follows
 
 ```sh
 var options = {
-	verbose: true //logs the steps undergoing.
-	autoId: false //Automatically insert id of every row, i.e., numbering every row.
-	customStartEnd: false //Custom insert the row and columns rather than full excel-file.
-	startRow: <required> //Valid only if customStartEnd is true. Defines the start Row of the data.
-	endRow: <required> //Valid only if customStartEnd is true. Defines the end Row of the data.
-	startCol: <required> //Valid only if customStartEnd is true. Defines the start Column of the data.
-	endCol: <required> //Valid only if customStartEnd is true. Defines the end Column of the data.
-	safeMode: false //Backup the db to the current working directory with <db>.sql as file name.
+	verbose: true // logs the steps undergoing.
+	autoId: false // Automatically insert id of every row, i.e., numbering every row.
+	customStartEnd: false // Custom insert the row and columns rather than full excel-file.
+	startRow: <required> // Valid only if customStartEnd is true. Defines the start Row of the data.
+	endRow: <required> // Valid only if customStartEnd is true. Defines the end Row of the data.
+	startCol: <required> // Valid only if customStartEnd is true. Defines the start Column of the data.
+	endCol: <required> // Valid only if customStartEnd is true. Defines the end Column of the data.
+	safeMode: false // Backup the db to the <destination> with <db>.sql as file name.
+	destination: <String> // Valid only if safeMode is true. The location of db.sql file.
 }
 ```
 
