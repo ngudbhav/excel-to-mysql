@@ -232,7 +232,6 @@ exports.covertToMYSQL = function(data, options, callback){
 
 	noOfOperations = 0;
 	return new Promise(async function(resolve, reject) {
-    console.log(data.table, data.db);
     if(!data.table){
       reject("Please specify a table");
       return callback("Please specify a table");
