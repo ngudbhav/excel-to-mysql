@@ -4,8 +4,7 @@
   "description": "This module converts an excel spreadsheet to mysql table",
   "main": "src/index",
   "scripts": {
-    "test": "node test/test.js",
-    "prepublish": "npm test"
+    "test": "node test/test.js"
   },
   "engines": {
     "node": ">=4.2.4"
