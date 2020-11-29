@@ -53,7 +53,7 @@ npm test
 
 ## Using
 
-Note: Please correctly format the excel sheet else this won't work.
+Note: Please correctly format the Excel sheet else this won't work.
 
 ```sh
 var excelMysql = require('excel-to-mysql');
@@ -61,6 +61,11 @@ var excelMysql = require('excel-to-mysql');
 
 This module needs 3 arguments.
 The first one is the object with your credentials.
+
+Database connection can be established in 2 ways.
+1. Pass in your connection object which is the return of `mysql.createConnection`. The connection accepts connection both from mysql/mysql2. The same connection will be used to read/write data.
+2. Pass in your credentials in the below format. `mysql` will be used to create a connection.
+
 
 ```sh
 var credentialsForDB = {
@@ -70,11 +75,14 @@ var credentialsForDB = {
 	path: path for the excel file,
 	table: Table name for creation,
 	db: Your Database name,
-	endConnection*: true
+	endConnection*: true,
+	connection: <Object>
 };
+```
 
 * Please note that endConnection false may not terminate the process.
 
+```sh
 var credentialsForFile = {
 	path: path for the excel file,
 	table: Table name for creation,
