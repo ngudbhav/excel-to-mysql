@@ -66,7 +66,6 @@ Database connection can be established in 2 ways.
 1. Pass in your connection object which is the return of `mysql.createConnection`. The connection accepts connection both from mysql/mysql2. The same connection will be used to read/write data.
 2. Pass in your credentials in the below format. `mysql` will be used to create a connection.
 
-
 ```sh
 var credentialsForDB = {
 	host: host,
