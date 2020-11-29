@@ -10,6 +10,7 @@ logs/
 .gitignore
 .travis.yml
 .circleci/
+.idea/
 webpack.config.js
 test/
 docs/
