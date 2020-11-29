@@ -7,6 +7,7 @@ before_install:
   - sudo mysql_upgrade -u root -pngudbhav
   - sudo service mysql restart
   - mysql -u root -pngudbhav --execute="DROP DATABASE IF EXISTS ug;CREATE DATABASE ug;"
+  - npm install mysql
 after_success:
   - mysql -u root -pngudbhav --execute="drop database ug;"
 node_js:

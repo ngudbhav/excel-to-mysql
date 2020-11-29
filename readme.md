@@ -53,7 +53,7 @@ npm test
 
 ## Using
 
-Note: Please correctly format the excel sheet else this won't work.
+Note: Please correctly format the Excel sheet else this won't work.
 
 ```sh
 var excelMysql = require('excel-to-mysql');
@@ -62,6 +62,10 @@ var excelMysql = require('excel-to-mysql');
 This module needs 3 arguments.
 The first one is the object with your credentials.
 
+Database connection can be established in 2 ways.
+1. Pass in your connection object which is the return of `mysql.createConnection`. The connection accepts connection both from mysql/mysql2. The same connection will be used to read/write data.
+2. Pass in your credentials in the below format. `mysql` will be used to create a connection.
+
 ```sh
 var credentialsForDB = {
 	host: host,
@@ -69,9 +73,15 @@ var credentialsForDB = {
 	pass: Password for the above account,
 	path: path for the excel file,
 	table: Table name for creation,
-	db: Your Database name
+	db: Your Database name,
+	endConnection*: true,
+	connection: <Object>
 };
+```
 
+* Please note that endConnection false may not terminate the process.
+
+```sh
 var credentialsForFile = {
 	path: path for the excel file,
 	table: Table name for creation,
@@ -83,14 +93,15 @@ The second one is an optional argument of options with default values as follows
 
 ```sh
 var options = {
-	verbose: true //logs the steps undergoing.
-	autoId: false //Automatically insert id of every row, i.e., numbering every row.
-	customStartEnd: false //Custom insert the row and columns rather than full excel-file.
-	startRow: <required> //Valid only if customStartEnd is true. Defines the start Row of the data.
-	endRow: <required> //Valid only if customStartEnd is true. Defines the end Row of the data.
-	startCol: <required> //Valid only if customStartEnd is true. Defines the start Column of the data.
-	endCol: <required> //Valid only if customStartEnd is true. Defines the end Column of the data.
-	safeMode: false //Backup the db to the current working directory with <db>.sql as file name.
+	verbose: true // logs the steps undergoing.
+	autoId: false // Automatically insert id of every row, i.e., numbering every row.
+	customStartEnd: false // Custom insert the row and columns rather than full excel-file.
+	startRow: <required> // Valid only if customStartEnd is true. Defines the start Row of the data.
+	endRow: <required> // Valid only if customStartEnd is true. Defines the end Row of the data.
+	startCol: <required> // Valid only if customStartEnd is true. Defines the start Column of the data.
+	endCol: <required> // Valid only if customStartEnd is true. Defines the end Column of the data.
+	safeMode: false // Backup the db to the <destination> with <db>.sql as file name.
+	destination: <String> // Valid only if safeMode is true. The location of db.sql file.
 }
 ```
 
