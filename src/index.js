@@ -69,20 +69,22 @@ const rowsFromExcel = async function(filePath, callback) {
   const extension = filePath.toString().slice(filePath.toString().length-3, filePath.toString().length);
   if(extension === 'csv' || extension === 'CSV'){
     fs.readFile(filePath, 'utf8', function(error, sdata){
-      if (error) throw error;
+      if (error) {
+        callback(error);
+      }
       else {
         csv({
           noheader: true,
           output: "csv"
         }).fromString(sdata)
           .then(function(rows) {
-            callback(rows);
+            callback(null, rows);
           });
       }
     });
   } else {
     readExcel(fs.createReadStream(filePath)).then(function(rows) {
-      callback(rows);
+      callback(null, rows);
     });
   }
 };
@@ -183,35 +185,40 @@ exports.convertToFile = function(data, options, callback){
   callback = params[1];
   noOfOperations = 0;
   return new Promise(async function(resolve, reject) {
-    rowsFromExcel(data.path, function(rows) {
-      const tableString = createTable(options, rows, reject, callback);
-      if(!data.table){
-        reject("Please specify a table");
-        return callback("Please specify a table");
-      }
-      if(!data.db){
-        reject("Please specify a database");
-        return callback("Please specify a database");
-      }
-
-      const destination = options.destination || path.join(process.cwd(), data.db + '.sql');
-
-      //Fire up the query
-      fs.writeFile(destination, 'create database if not exists '+data.db+';\nuse '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
-        if(error) throw error;
-        else{
-          //Create the string first and then insert the full data at once.
-          const insertString = createInsertTable(options, rows, reject, callback);
-
-          fs.appendFile(destination, 'insert into '+data.table+' values'+insertString+';\n', function(error){
-            if(error) throw error;
-            else{
-              resolve('Saved File to ' + destination);
-              return callback(null, 'Saved File to ' + destination);
-            }
-          });
+    rowsFromExcel(data.path, function(error, rows) {
+      if (error) {
+        reject(error);
+        return callback(error);
+      } else {
+        const tableString = createTable(options, rows, reject, callback);
+        if(!data.table){
+          reject("Please specify a table");
+          return callback("Please specify a table");
         }
-      });
+        if(!data.db){
+          reject("Please specify a database");
+          return callback("Please specify a database");
+        }
+
+        const destination = options.destination || path.join(process.cwd(), data.db + '.sql');
+
+        //Fire up the query
+        fs.writeFile(destination, 'create database if not exists '+data.db+';\nuse '+data.db+';\ncreate table if not exists '+data.table+' ('+tableString+');\n', function(error){
+          if(error) throw error;
+          else{
+            //Create the string first and then insert the full data at once.
+            const insertString = createInsertTable(options, rows, reject, callback);
+
+            fs.appendFile(destination, 'insert into '+data.table+' values'+insertString+';\n', function(error){
+              if(error) throw error;
+              else{
+                resolve('Saved File to ' + destination);
+                return callback(null, 'Saved File to ' + destination);
+              }
+            });
+          }
+        });
+      }
     });
   });
 }
@@ -281,48 +288,53 @@ exports.covertToMYSQL = function(data, options, callback){
           return callback(error);
         }
       } else {
-        rowsFromExcel(data.path, function(rows){
-          const tableString = createTable(options, rows, reject, callback);
+        rowsFromExcel(data.path, function(error, rows){
+          if (error) {
+            reject(error);
+            return callback(error);
+          } else {
+            const tableString = createTable(options, rows, reject, callback);
 
-          //Fire up the query
-          //Create database if not exists to allow database creation directly.
-          connection.query('create database if not exists '+data.db+';use '+data.db+';create table if not exists '+data.table+' ('+tableString+')', function(error){
-            if(options.verbose){
-              console.log('Table created!');
-            }
-            if(error){
-              if(error.code==='ER_PARSE_ERROR'){
-                reject('It seems that the column heading are not in text format.');
-                return callback('It seems that the column heading are not in text format.');
-              } else {
-                reject(error);
-                return callback(error);
+            //Fire up the query
+            //Create database if not exists to allow database creation directly.
+            connection.query('create database if not exists '+data.db+';use '+data.db+';create table if not exists '+data.table+' ('+tableString+')', function(error){
+              if(options.verbose){
+                console.log('Table created!');
               }
-            } else {
-              //Create the string first and then insert the full data at once.
-              const insertString = createInsertTable(options, rows, reject, callback);
-              connection.query('insert into '+data.table+' values'+insertString, function(error, results){
-                if(options.verbose){
-                  console.log('Inserting data!');
-                }
-                if(error){
-                  if(error.code === 'ER_WRONG_VALUE_COUNT_ON_ROW'){
-                    reject('The table you provided either already contains some data or there is a problem with the already prevailing column count.');
-                    return callback('The table you provided either already contains some data or there is a problem with the already prevailing column count.');
-                  } else {
-                    reject("Incorrectly formatted Excel file");
-                    return callback("Incorrectly formatted Excel file");
-                  }
+              if(error){
+                if(error.code==='ER_PARSE_ERROR'){
+                  reject('It seems that the column heading are not in text format.');
+                  return callback('It seems that the column heading are not in text format.');
                 } else {
-                  if (data.endConnection) {
-                    connection.end();
-                  }
-                  resolve(results);
-                  return callback(null, results);
+                  reject(error);
+                  return callback(error);
                 }
-              });
-            }
-          });
+              } else {
+                //Create the string first and then insert the full data at once.
+                const insertString = createInsertTable(options, rows, reject, callback);
+                connection.query('insert into '+data.table+' values'+insertString, function(error, results){
+                  if(options.verbose){
+                    console.log('Inserting data!');
+                  }
+                  if(error){
+                    if(error.code === 'ER_WRONG_VALUE_COUNT_ON_ROW'){
+                      reject('The table you provided either already contains some data or there is a problem with the already prevailing column count.');
+                      return callback('The table you provided either already contains some data or there is a problem with the already prevailing column count.');
+                    } else {
+                      reject("Incorrectly formatted Excel file");
+                      return callback("Incorrectly formatted Excel file");
+                    }
+                  } else {
+                    if (data.endConnection) {
+                      connection.end();
+                    }
+                    resolve(results);
+                    return callback(null, results);
+                  }
+                });
+              }
+            });
+          }
         });
       }
     });

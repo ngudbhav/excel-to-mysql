@@ -1,7 +1,7 @@
 
 "use strict";
 
-var excelConverter = require('../src/index.js');
+const excelConverter = require('../src/index.js');
 
 function generateOutput(error, resultIsError, results) {
   if(error) {
