@@ -177,7 +177,12 @@ const createInsertTable = function(options, rows, reject, callback) {
   return insertString.replace(/.$/,'');
 };
 
-//Function to convert to file
+/**
+ * Dump the data in a file. Uses the cwd if destination is not provided
+ * @param data {object}
+ * @param options {object}
+ * @param callback {function}
+ */
 exports.convertToFile = function(data, options, callback){
   //optional parameter 'options'
   const params = optionalizeParameter(options, callback);
@@ -222,7 +227,12 @@ exports.convertToFile = function(data, options, callback){
     });
   });
 }
-//Function to send the data directly to the database.
+/**
+ * Dumps the data into a database
+ * @param data {object}
+ * @param options {object}
+ * @param callback {function}
+ */
 exports.covertToMYSQL = function(data, options, callback){
   //optional parameter 'options'
   const params = optionalizeParameter(options, callback);
