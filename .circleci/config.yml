@@ -24,7 +24,7 @@
           name: Install MySQL CLI; Import dummy data; run an example query
           command: |
             sudo apt-get update
-            sudo apt-get install mysql-client
+            sudo apt-get install -y mysql-client
             mysql -h 127.0.0.1 -u root -pngudbhav --execute="DROP DATABASE IF EXISTS ug;CREATE DATABASE ug;"
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
