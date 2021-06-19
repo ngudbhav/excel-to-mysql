@@ -6,7 +6,6 @@ const excelConverter = require('../src/index.js');
 function generateOutput(error, resultIsError, results) {
   if(error) {
     if (resultIsError) {
-      console.log(error);
       console.log('\x1b[36m%s\x1b[0m', 'Passed!');
     } else {
       throw error;
@@ -22,20 +21,27 @@ function generateOutput(error, resultIsError, results) {
   }
 }
 
-async function file(data, options, resultIsError=false) {
-	await excelConverter.convertToFile(data, options, function(error, results){
-		generateOutput(error, resultIsError, results);
-	});
+async function file(data, options, resultIsError = false) {
+	try {
+    await excelConverter.convertToFile(data, options, function(error, results){
+      if (!error) generateOutput(error, resultIsError, results);
+    });
+  } catch (error) {
+	  generateOutput(error, resultIsError, null);
+  }
 }
 
-async function mysql(data, options, resultIsError=false) {
-	await excelConverter.covertToMYSQL(data, options, function(error, results){
-    console.log(data);
-		generateOutput(error, resultIsError, results);
-	});
+async function mysql(data, options, resultIsError = false) {
+	try {
+    await excelConverter.covertToMYSQL(data, options, function(error, results){
+      if (!error) generateOutput(error, resultIsError, results);
+    });
+  } catch (error) {
+	  generateOutput(error, resultIsError, null);
+  }
 }
 
-var initialData = {
+const initialData = {
 	host: "localhost",
 	user: "root",
 	pass: "ngudbhav",
@@ -45,7 +51,7 @@ var initialData = {
 	endConnection: true,
 };
 
-var initialOptions = {
+const initialOptions = {
 	customStartEnd: false,
 	startRow:1,
 	startCol: 1,

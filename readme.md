@@ -108,9 +108,14 @@ var options = {
 The third argument is the callback function which will be executed only after the completion of the whole conversion.
 
 ```sh
-excelMysql.covertToMYSQL(credentials, options, callback);
-excelMysql.convertToFile(credentials, options, callback);
+try {
+  excelMysql.covertToMYSQL(credentials, options, callback);
+  excelMysql.convertToFile(credentials, options, callback);
+} catch(error) {
+  throw error;
+}
 ```
+`try/catch` is always recommended because of the type of errors that can occur.
 
 convertToFile Function will write the .sql file to the current working directory if no destination is provided with <code>db</code>.sql as the file name.
 
