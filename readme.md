@@ -69,6 +69,7 @@ Database connection can be established in 2 ways.
 ```sh
 var credentialsForDB = {
 	host: host,
+	port: port || 3306,
 	user: MYSQL Username,
 	pass: Password for the above account,
 	path: path for the excel file,
