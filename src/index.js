@@ -1,5 +1,6 @@
 
 "use strict";
+const DEFAULT_PORT = 3306;
 
 const readExcel = require('read-excel-file/node');
 const fs = require('fs');
@@ -269,6 +270,7 @@ exports.covertToMYSQL = function(data, options, callback){
       mysqldump({
         connection: {
           host: data.host,
+          port: data.port || DEFAULT_PORT,
           user: data.user,
           password: data.pass,
           database: data.db,
@@ -280,6 +282,7 @@ exports.covertToMYSQL = function(data, options, callback){
     //Try to connect with the provided credentials
     var connection = data.connection || mysql.createConnection({
       host: data.host,
+      port: data.port || DEFAULT_PORT,
       user: data.user,
       password: data.pass,
       multipleStatements: true

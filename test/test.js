@@ -1,5 +1,7 @@
 
 "use strict";
+const DB_PASS = '';
+const INCORRECT_DB_PASS = 'incorrect';
 
 const excelConverter = require('../src/index.js');
 
@@ -44,7 +46,8 @@ async function mysql(data, options, resultIsError = false) {
 const initialData = {
 	host: "localhost",
 	user: "root",
-	pass: "ngudbhav",
+  port: 3306,
+	pass: DB_PASS,
 	path: "test/sample1.xlsx",
 	table: "sample",
 	db: "ug",
@@ -67,11 +70,11 @@ const initialOptions = {
   await mysql(initialData, initialOptions);
 
   // Authentication Error Test
-  initialData["pass"] = undefined;
+  initialData["pass"] = INCORRECT_DB_PASS;
   await mysql(initialData, initialOptions, true);
 
   // Invalid Table or Database
-  initialData["pass"] = 'ngudbhav';
+  initialData["pass"] = DB_PASS;
   initialData["db"] = undefined;
   initialData["table"] = undefined;
   await mysql(initialData, initialOptions, true);
