@@ -25,7 +25,7 @@
   "dependencies": {
     "csvtojson": "^2.0.10",
     "mysqldump": "^3.2.0",
-    "read-excel-file": "^4.1.0"
+    "read-excel-file": "^5.4.7"
   },
   "peerDependencies": {
     "mysql": "*"
